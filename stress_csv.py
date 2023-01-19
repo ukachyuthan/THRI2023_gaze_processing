@@ -48,7 +48,8 @@ for file in glob.glob("*.bag"):
 
 print(eye_calib_value)
 
-max_pupil_average = -100000000000000000
+max_pupil_diff = -100000000000000000
+min_pupil_diff = 100000000000000000
 
 for file in glob.glob("*.bag"):
     
@@ -82,12 +83,25 @@ for file in glob.glob("*.bag"):
 
         pupil_average = sum(pupil_data)/valid
 
-        if pupil_average > max_pupil_average:
-            max_pupil_average = pupil_average
+        # print(name_of_file, pupil_average, pupil_average - eye_calib_value)
+        pupil_diff = pupil_average - eye_calib_value
+
+        if pupil_diff > max_pupil_diff:
+            max_pupil_diff = pupil_diff
+            max_name = name_of_file
+        if pupil_diff < min_pupil_diff:
+            min_pupil_diff = pupil_diff
+            min_name = name_of_file
+
     except:
         print(name_of_file)
 
-max_pupil_diff = max_pupil_average - eye_calib_value
+# max_pupil_diff = max_pupil_average - eye_calib_value
+
+print(min_pupil_diff, min_name, max_pupil_diff, max_name)
+
+if min_pupil_diff < 0:
+    max_pupil_diff += abs(min_pupil_diff)
 
 for file in glob.glob("*.bag"):
     
@@ -125,7 +139,11 @@ for file in glob.glob("*.bag"):
         i = 0
         # sum = 0
         # print(name_of_file)
-        df = df.append({'pupil_average':(pupil_average - eye_calib_value)/max_pupil_diff}, ignore_index = True)
+        pupil_diff = pupil_average - eye_calib_value
+        if min_pupil_diff < 0:
+            pupil_diff += abs(min_pupil_diff)
+        print(name_of_file, pupil_diff, max_pupil_diff)
+        df = df.append({'pupil_average':pupil_diff/max_pupil_diff}, ignore_index = True)
         df.to_csv(name_of_file + 'pupil.csv')
     except:
         print(name_of_file)
